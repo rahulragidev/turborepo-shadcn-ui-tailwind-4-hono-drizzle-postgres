@@ -11,7 +11,8 @@
     "./hooks/*": "./src/hooks/*.ts"
   },
   "scripts": {
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "clean": "rm -rf .turbo node_modules dist"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.6",

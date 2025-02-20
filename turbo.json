@@ -17,6 +17,9 @@
       "cache": false,
       "persistent": true,
       "env": ["DATABASE_URL"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }
