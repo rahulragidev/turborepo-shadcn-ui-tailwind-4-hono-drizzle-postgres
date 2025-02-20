@@ -2,6 +2,7 @@ import { ModeToggle } from '@/components/mode-toggle';
 import { Button, buttonVariants } from '@workspace/ui/components/button';
 import { cn } from '@workspace/ui/lib/utils';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -68,6 +69,13 @@ import { cn } from '@workspace/ui/lib/utils';`}</code>
             Read our docs
           </a>
         </div>
+
+        <Link
+          href="/users"
+          className={cn(buttonVariants({ variant: 'default' }), 'mt-4')}
+        >
+          View Users
+        </Link>
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a

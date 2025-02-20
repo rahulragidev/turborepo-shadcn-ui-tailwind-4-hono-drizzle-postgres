@@ -1,11 +1,24 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { db, users } from '@workspace/database'
+import { cors } from 'hono/cors'
+import { z } from 'zod'
+import { db } from '../../../packages/database/database.js'
+import { posts, users } from '@workspace/database/schema'
+import { NewPostSchema, NewUserSchema } from '@workspace/database/zod-schema'
 
 const app = new Hono()
 
+// Add CORS middleware
+app.use('/*', cors({
+  origin: '*', // For development, allow all origins
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  exposeHeaders: ['Content-Length', 'X-Requested-With']
+}))
+
 // Get port from command line argument or use default
-const port = parseInt(process.argv[2]?.split('=')[1] || '3000', 10)
+const port = 3030
 
 // Root route
 app.get('/', (c) => {
@@ -29,13 +42,48 @@ app.get('/users', async (c) => {
 app.post('/users', async (c) => {
   try {
     const data = await c.req.json()
-    const inserted = await db.insert(users).values(data).returning()
+    const validated = NewUserSchema.parse(data)
+    const inserted = await db.insert(users).values(validated).returning()
     return c.json(inserted[0], 201)
   } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: error }, 400)
+    }
     if (error instanceof Error) {
       return c.json({ error: error.message }, 500)
     }
     return c.json({ error: 'Failed to create user' }, 500)
+  }
+})
+
+// Get all posts
+app.get('/posts', async (c) => {
+  try {
+    const allPosts = await db.select().from(posts)
+    return c.json(allPosts)
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500)
+    }
+    return c.json({ error: 'Failed to fetch posts' }, 500)
+  }
+})
+
+// Create a new post
+app.post('/posts', async (c) => {
+  try {
+    const data = await c.req.json()
+    const validated = NewPostSchema.parse(data)
+    const inserted = await db.insert(posts).values(validated).returning()
+    return c.json(inserted[0], 201)
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: error }, 400)
+    }
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500)
+    }
+    return c.json({ error: 'Failed to create post' }, 500)
   }
 })
 
@@ -52,12 +100,26 @@ async function testDbConnection() {
   }
 }
 
-// Add this to your server startup
+// Add sample user if no users exist
+async function addSampleUserIfNeeded() {
+  const existingUsers = await db.select().from(users)
+  if (existingUsers.length === 0) {
+    await db.insert(users).values({
+      name: 'Sample User'
+    })
+    console.log('✅ Added sample user')
+  }
+}
+
+// Update the server startup
 const startServer = async () => {
   const isDbConnected = await testDbConnection()
   if (!isDbConnected) {
     process.exit(1)
   }
+  
+  await addSampleUserIfNeeded()
+  
   serve({
     fetch: app.fetch,
     port
