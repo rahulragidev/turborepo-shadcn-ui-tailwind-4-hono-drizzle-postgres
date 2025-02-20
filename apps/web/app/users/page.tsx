@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { User } from "@workspace/database/types";
-import { api } from "@/lib/api-client";
+import { api } from "@workspace/api-client";
 import { Button } from "@workspace/ui/components/button";
 
 export default function UsersPage() {

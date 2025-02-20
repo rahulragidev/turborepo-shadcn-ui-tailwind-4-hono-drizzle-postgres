@@ -11,6 +11,7 @@
     "clean": "rm -rf .turbo node_modules .next dist"
   },
   "dependencies": {
+    "@workspace/api-client": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@workspace/database": "workspace:^",
     "lucide-react": "0.475.0",

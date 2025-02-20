@@ -57,6 +57,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@workspace/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@workspace/database':
         specifier: workspace:^
         version: link:../../packages/database
@@ -100,6 +103,25 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.0.6
+      typescript:
+        specifier: ^5
+        version: 5.7.3
+
+  packages/api-client:
+    dependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.13.4
+      '@workspace/database':
+        specifier: workspace:*
+        version: link:../database
+    devDependencies:
+      '@workspace/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@workspace/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: ^5
         version: 5.7.3

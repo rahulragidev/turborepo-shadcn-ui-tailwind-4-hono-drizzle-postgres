@@ -1,6 +1,6 @@
 import { User, Post } from "@workspace/database/types";
 
-const API_BASE_URL = "http://localhost:3030";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3030";
 
 export const api = {
   // User operations
@@ -51,3 +51,5 @@ export const api = {
     return response.json();
   },
 };
+
+export type Api = typeof api;
