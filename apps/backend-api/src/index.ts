@@ -1,12 +1,20 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+import { prettyJSON } from "hono/pretty-json";
+import { timing } from "hono/timing";
 import { z } from "zod";
 import { db } from "../../../packages/database/database.js";
 import { posts, users } from "@workspace/database/schema";
 import { NewPostSchema, NewUserSchema } from "@workspace/database/zod-schema";
 
 const app = new Hono();
+
+// Add middleware
+app.use("*", logger());
+app.use("*", timing());
+app.use("*", prettyJSON());
 
 // Add CORS middleware
 app.use(
