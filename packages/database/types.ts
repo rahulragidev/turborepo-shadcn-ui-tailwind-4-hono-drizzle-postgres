@@ -1,6 +1,6 @@
 // packages/db/types.ts
-import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
-import { users, posts } from './schema.js';
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
+import { users, posts } from "./schema.js";
 
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;

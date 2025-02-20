@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { User } from '@workspace/database/types';
-import { api } from '@/lib/api-client';
-import { Button } from '@workspace/ui/components/button';
+import { useState, useEffect } from "react";
+import { User } from "@workspace/database/types";
+import { api } from "@/lib/api-client";
+import { Button } from "@workspace/ui/components/button";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [newUserName, setNewUserName] = useState('');
+  const [newUserName, setNewUserName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,7 +22,7 @@ export default function UsersPage() {
       setUsers(fetchedUsers);
       setError(null);
     } catch (err) {
-      setError('Failed to load users');
+      setError("Failed to load users");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -33,11 +33,11 @@ export default function UsersPage() {
     e.preventDefault();
     try {
       await api.createUser({ name: newUserName });
-      setNewUserName('');
+      setNewUserName("");
       await loadUsers();
       setError(null);
     } catch (err) {
-      setError('Failed to create user');
+      setError("Failed to create user");
       console.error(err);
     }
   }
@@ -45,7 +45,7 @@ export default function UsersPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Users</h1>
-      
+
       {error && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4">
           {error}
@@ -85,4 +85,4 @@ export default function UsersPage() {
       )}
     </div>
   );
-} 
+}

@@ -38,7 +38,7 @@ Your `globals.css` are already set up to use the components from the `ui` packag
 To use the components in your app, import them from the `ui` package.
 
 ```tsx
-import { Button } from '@workspace/ui/components/ui/button';
+import { Button } from "@workspace/ui/components/ui/button";
 ```
 
 ## More Resources

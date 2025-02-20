@@ -1,5 +1,5 @@
 // packages/db/migrate.ts
-import { migrate } from "drizzle-orm/node-postgres/migrator"; 
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "./index.js";
 
 const main = async () => {

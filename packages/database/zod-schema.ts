@@ -1,5 +1,5 @@
-import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
-import { posts, users } from './schema.js';
+import { createSelectSchema, createInsertSchema } from "drizzle-zod";
+import { posts, users } from "./schema.js";
 
 export const UserSchema = createSelectSchema(users);
 export const NewUserSchema = createInsertSchema(users);
