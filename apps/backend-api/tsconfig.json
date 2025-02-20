@@ -1,14 +1,16 @@
 {
+  "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "NodeNext",
-    "strict": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
     "types": [
       "node"
     ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-  }
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }
