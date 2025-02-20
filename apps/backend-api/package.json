@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/index.ts --port 3000",
     "lint": "eslint . --max-warnings 0",
     "build": "tsc",
     "start": "node dist/index.js"
