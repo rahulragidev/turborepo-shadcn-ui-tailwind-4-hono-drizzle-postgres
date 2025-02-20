@@ -39,9 +39,31 @@ app.post('/users', async (c) => {
   }
 })
 
-serve({
-  fetch: app.fetch,
-  port
-}, (info) => {
-  console.log(`Server is running on http://${info.address}:${info.port}`)
-})
+// Update the connection test to use Drizzle
+async function testDbConnection() {
+  try {
+    // Test query to verify connection
+    await db.select().from(users).limit(1)
+    console.log('✅ Database connection successful')
+    return true
+  } catch (error) {
+    console.error('❌ Database connection failed:', error)
+    return false
+  }
+}
+
+// Add this to your server startup
+const startServer = async () => {
+  const isDbConnected = await testDbConnection()
+  if (!isDbConnected) {
+    process.exit(1)
+  }
+  serve({
+    fetch: app.fetch,
+    port
+  }, (info) => {
+    console.log(`Server is running on http://${info.address}:${info.port}`)
+  })
+}
+
+startServer()
