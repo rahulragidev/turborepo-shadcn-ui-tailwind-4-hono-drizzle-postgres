@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Post, User } from "@workspace/database/types";
-import { api } from "@workspace/api-client";
+import { useState } from "react";
+import type { Post } from "@workspace/database/types";
 import { Button } from "@workspace/ui/components/button";
 import { ClientPostSchema } from "@workspace/database/zod-schema";
 import { useZodForm } from "@workspace/ui/hooks/useZodForm";
-import { z } from "zod";
+import { usePosts } from "@workspace/ui/hooks/use-posts";
+import { useUsers } from "@workspace/ui/hooks/use-users";
 
 export default function PostsPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const { posts, isLoading, error, createPost, updatePost, deletePost } = usePosts();
+  const { users } = useUsers();
 
   const {
     register,
@@ -23,73 +21,19 @@ export default function PostsPage() {
     formState: { errors },
   } = useZodForm(ClientPostSchema);
 
-  useEffect(() => {
-    loadPosts();
-    loadUsers();
-  }, []);
-
-  async function loadPosts() {
+  const onSubmit = async (data: { title: string; content: string; userId: number }) => {
     try {
-      setIsLoading(true);
-      const fetchedPosts = await api.getPosts();
-      setPosts(fetchedPosts);
-      setError(null);
-    } catch (err) {
-      setError("Failed to load posts");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function loadUsers() {
-    try {
-      const fetchedUsers = await api.getUsers();
-      setUsers(fetchedUsers);
-    } catch (err) {
-      console.error("Failed to load users:", err);
-    }
-  }
-
-  const onSubmit = async (data: z.infer<typeof ClientPostSchema>) => {
-    try {
-      await api.createPost(data);
+      if (editingPost) {
+        await updatePost(editingPost.id, data);
+        setEditingPost(null);
+      } else {
+        await createPost(data);
+      }
       reset();
-      setEditingPost(null);
-      await loadPosts();
-      setError(null);
     } catch (err) {
-      setError("Failed to create post");
       console.error(err);
     }
   };
-
-  const handleUpdatePost = async (data: z.infer<typeof ClientPostSchema>) => {
-    if (!editingPost) return;
-    try {
-      await api.updatePost(editingPost.id, data);
-      reset();
-      setEditingPost(null);
-      await loadPosts();
-      setError(null);
-    } catch (err) {
-      setError("Failed to update post");
-      console.error(err);
-    }
-  };
-
-  async function handleDeletePost(postId: number) {
-    if (!confirm("Are you sure you want to delete this post?")) return;
-
-    try {
-      await api.deletePost(postId);
-      await loadPosts();
-      setError(null);
-    } catch (err) {
-      setError("Failed to delete post");
-      console.error(err);
-    }
-  }
 
   const handleEdit = (post: Post) => {
     setEditingPost(post);
@@ -114,7 +58,7 @@ export default function PostsPage() {
       )}
 
       <form
-        onSubmit={handleSubmit(editingPost ? handleUpdatePost : onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
         className="mb-8 space-y-4"
       >
         <div>
@@ -150,7 +94,7 @@ export default function PostsPage() {
             required
           >
             <option value="">Select a user</option>
-            {users.map((user) => (
+            {users?.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.name}
               </option>
@@ -176,7 +120,7 @@ export default function PostsPage() {
         <div className="text-center">Loading posts...</div>
       ) : (
         <div className="grid gap-4">
-          {posts.map((post) => (
+          {posts?.map((post: Post) => (
             <div key={post.id} className="p-4 border rounded-md">
               <div className="flex justify-between items-start">
                 <div>
@@ -197,7 +141,7 @@ export default function PostsPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDeletePost(post.id)}
+                    onClick={() => deletePost(post.id)}
                   >
                     Delete
                   </Button>
