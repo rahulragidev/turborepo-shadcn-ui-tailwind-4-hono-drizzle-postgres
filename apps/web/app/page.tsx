@@ -7,7 +7,7 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center">
       <main className="flex flex-col gap-8 items-center">
         <h1 className="text-3xl font-bold">Welcome</h1>
-        
+
         <div className="flex gap-4">
           <Link
             href="/users"

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { User } from "@workspace/database/types";
 import { api } from "@workspace/api-client";
 import { Button } from "@workspace/ui/components/button";
+import { ClientUserSchema } from "@workspace/database/zod-schema";
+import { useZodForm } from "@workspace/ui/hooks/useZodForm";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -11,6 +13,12 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useZodForm(ClientUserSchema);
 
   useEffect(() => {
     loadUsers();
@@ -30,10 +38,9 @@ export default function UsersPage() {
     }
   }
 
-  async function handleCreateUser(e: React.FormEvent) {
-    e.preventDefault();
+  const onSubmit = async (data: { name: string }) => {
     try {
-      await api.createUser({ name: newUserName });
+      await api.createUser(data);
       setNewUserName("");
       await loadUsers();
       setError(null);
@@ -41,7 +48,7 @@ export default function UsersPage() {
       setError("Failed to create user");
       console.error(err);
     }
-  }
+  };
 
   async function handleUpdateUser(e: React.FormEvent) {
     e.preventDefault();
@@ -83,17 +90,19 @@ export default function UsersPage() {
       )}
 
       <form
-        onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
+        onSubmit={editingUser ? handleUpdateUser : handleSubmit(onSubmit)}
         className="mb-8 flex gap-4"
       >
         <input
           type="text"
-          value={newUserName}
-          onChange={(e) => setNewUserName(e.target.value)}
           placeholder="Enter user name"
           className="px-4 py-2 border rounded-md"
           required
+          {...register("name")}
         />
+        {errors.name && (
+          <span className="text-red-500">{String(errors.name.message)}</span>
+        )}
         <Button type="submit">
           {editingUser ? "Update User" : "Add User"}
         </Button>
