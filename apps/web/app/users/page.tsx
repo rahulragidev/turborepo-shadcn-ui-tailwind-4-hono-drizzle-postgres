@@ -10,6 +10,7 @@ export default function UsersPage() {
   const [newUserName, setNewUserName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -42,6 +43,35 @@ export default function UsersPage() {
     }
   }
 
+  async function handleUpdateUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    try {
+      await api.updateUser(editingUser.id, { name: newUserName });
+      setNewUserName("");
+      setEditingUser(null);
+      await loadUsers();
+      setError(null);
+    } catch (err) {
+      setError("Failed to update user");
+      console.error(err);
+    }
+  }
+
+  async function handleDeleteUser(userId: number) {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      await api.deleteUser(userId);
+      await loadUsers();
+      setError(null);
+    } catch (err) {
+      setError("Failed to delete user");
+      console.error(err);
+    }
+  }
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Users</h1>
@@ -52,7 +82,10 @@ export default function UsersPage() {
         </div>
       )}
 
-      <form onSubmit={handleCreateUser} className="mb-8 flex gap-4">
+      <form
+        onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
+        className="mb-8 flex gap-4"
+      >
         <input
           type="text"
           value={newUserName}
@@ -61,7 +94,21 @@ export default function UsersPage() {
           className="px-4 py-2 border rounded-md"
           required
         />
-        <Button type="submit">Add User</Button>
+        <Button type="submit">
+          {editingUser ? "Update User" : "Add User"}
+        </Button>
+        {editingUser && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setEditingUser(null);
+              setNewUserName("");
+            }}
+          >
+            Cancel
+          </Button>
+        )}
       </form>
 
       {isLoading ? (
@@ -78,6 +125,25 @@ export default function UsersPage() {
                 <p className="text-sm text-muted-foreground">
                   Created: {new Date(user.createdAt).toLocaleDateString()}
                 </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingUser(user);
+                    setNewUserName(user.name);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteUser(user.id)}
+                >
+                  Delete
+                </Button>
               </div>
             </div>
           ))}

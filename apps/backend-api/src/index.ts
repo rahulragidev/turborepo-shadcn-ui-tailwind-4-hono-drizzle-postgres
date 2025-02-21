@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "../../../packages/database/database.js";
 import { posts, users } from "@workspace/database/schema";
 import { NewPostSchema, NewUserSchema } from "@workspace/database/zod-schema";
+import { eq } from "drizzle-orm";
 
 const app = new Hono();
 
@@ -95,6 +96,80 @@ app.post("/posts", async (c) => {
       return c.json({ error: error.message }, 500);
     }
     return c.json({ error: "Failed to create post" }, 500);
+  }
+});
+
+// Update a user
+app.put("/users/:id", async (c) => {
+  try {
+    const id = Number(c.req.param("id"));
+    const data = await c.req.json();
+    const validated = NewUserSchema.partial().parse(data);
+    const updated = await db
+      .update(users)
+      .set(validated)
+      .where(eq(users.id, id))
+      .returning();
+    return c.json(updated[0]);
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: error }, 400);
+    }
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Failed to update user" }, 500);
+  }
+});
+
+// Delete a user
+app.delete("/users/:id", async (c) => {
+  try {
+    const id = Number(c.req.param("id"));
+    await db.delete(users).where(eq(users.id, id));
+    return c.json({ success: true });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Failed to delete user" }, 500);
+  }
+});
+
+// Update a post
+app.put("/posts/:id", async (c) => {
+  try {
+    const id = Number(c.req.param("id"));
+    const data = await c.req.json();
+    const validated = NewPostSchema.partial().parse(data);
+    const updated = await db
+      .update(posts)
+      .set(validated)
+      .where(eq(posts.id, id))
+      .returning();
+    return c.json(updated[0]);
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: error }, 400);
+    }
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Failed to update post" }, 500);
+  }
+});
+
+// Delete a post
+app.delete("/posts/:id", async (c) => {
+  try {
+    const id = Number(c.req.param("id"));
+    await db.delete(posts).where(eq(posts.id, id));
+    return c.json({ success: true });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Failed to delete post" }, 500);
   }
 });
 

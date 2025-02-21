@@ -70,12 +70,20 @@ import { cn } from '@workspace/ui/lib/utils';`}</code>
           </a>
         </div>
 
-        <Link
-          href="/users"
-          className={cn(buttonVariants({ variant: "default" }), "mt-4")}
-        >
-          View Users
-        </Link>
+        <div className="flex gap-4">
+          <Link
+            href="/users"
+            className={cn(buttonVariants({ variant: "default" }), "mt-4")}
+          >
+            View Users
+          </Link>
+          <Link
+            href="/posts"
+            className={cn(buttonVariants({ variant: "default" }), "mt-4")}
+          >
+            View Posts
+          </Link>
+        </div>
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
