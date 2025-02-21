@@ -17,7 +17,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
+    "@types/node": "^22.13.4",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "tsx": "^4.7.1",
