@@ -5,9 +5,11 @@ import type { User } from "@workspace/database/types";
 const USERS_KEY = "users";
 
 export function useUsers() {
-  const { data = [], error, isLoading } = useSWR<User[]>(USERS_KEY, () =>
-    api.getUsers()
-  );
+  const {
+    data = [],
+    error,
+    isLoading,
+  } = useSWR<User[]>(USERS_KEY, () => api.getUsers());
 
   const { mutate } = useSWRConfig();
 
@@ -16,7 +18,7 @@ export function useUsers() {
       await api.createUser(userData);
       await mutate(USERS_KEY);
     } catch (err) {
-      console.error('Create user error:', err);
+      console.error("Create user error:", err);
       throw new Error("Failed to create user");
     }
   };
@@ -26,7 +28,7 @@ export function useUsers() {
       await api.updateUser(id, userData);
       await mutate(USERS_KEY);
     } catch (err) {
-      console.error('Update user error:', err);
+      console.error("Update user error:", err);
       throw new Error("Failed to update user");
     }
   };
@@ -36,7 +38,7 @@ export function useUsers() {
       await api.deleteUser(id);
       await mutate(USERS_KEY);
     } catch (err) {
-      console.error('Delete user error:', err);
+      console.error("Delete user error:", err);
       throw new Error("Failed to delete user");
     }
   };
@@ -49,4 +51,4 @@ export function useUsers() {
     updateUser,
     deleteUser,
   };
-} 
+}

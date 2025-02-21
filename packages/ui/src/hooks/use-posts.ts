@@ -7,9 +7,11 @@ import type { ClientPostSchema } from "@workspace/database/zod-schema";
 const POSTS_KEY = "posts";
 
 export function usePosts() {
-  const { data = [], error, isLoading } = useSWR<Post[]>(POSTS_KEY, () =>
-    api.getPosts()
-  );
+  const {
+    data = [],
+    error,
+    isLoading,
+  } = useSWR<Post[]>(POSTS_KEY, () => api.getPosts());
 
   const { mutate } = useSWRConfig();
 
@@ -18,20 +20,20 @@ export function usePosts() {
       await api.createPost(postData);
       await mutate(POSTS_KEY);
     } catch (err) {
-      console.error('Create post error:', err);
+      console.error("Create post error:", err);
       throw new Error("Failed to create post");
     }
   };
 
   const updatePost = async (
     id: number,
-    postData: z.infer<typeof ClientPostSchema>
+    postData: z.infer<typeof ClientPostSchema>,
   ) => {
     try {
       await api.updatePost(id, postData);
       await mutate(POSTS_KEY);
     } catch (err) {
-      console.error('Update post error:', err);
+      console.error("Update post error:", err);
       throw new Error("Failed to update post");
     }
   };
@@ -41,7 +43,7 @@ export function usePosts() {
       await api.deletePost(id);
       await mutate(POSTS_KEY);
     } catch (err) {
-      console.error('Delete post error:', err);
+      console.error("Delete post error:", err);
       throw new Error("Failed to delete post");
     }
   };
@@ -54,4 +56,4 @@ export function usePosts() {
     updatePost,
     deletePost,
   };
-} 
+}

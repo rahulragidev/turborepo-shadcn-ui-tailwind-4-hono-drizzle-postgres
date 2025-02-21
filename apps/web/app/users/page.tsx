@@ -9,7 +9,8 @@ import { useUsers } from "@workspace/ui/hooks/use-users";
 
 export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const { users, isLoading, error, createUser, updateUser, deleteUser } = useUsers();
+  const { users, isLoading, error, createUser, updateUser, deleteUser } =
+    useUsers();
 
   const {
     register,

@@ -10,7 +10,8 @@ import { useUsers } from "@workspace/ui/hooks/use-users";
 
 export default function PostsPage() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const { posts, isLoading, error, createPost, updatePost, deletePost } = usePosts();
+  const { posts, isLoading, error, createPost, updatePost, deletePost } =
+    usePosts();
   const { users } = useUsers();
 
   const {
@@ -21,7 +22,11 @@ export default function PostsPage() {
     formState: { errors },
   } = useZodForm(ClientPostSchema);
 
-  const onSubmit = async (data: { title: string; content: string; userId: number }) => {
+  const onSubmit = async (data: {
+    title: string;
+    content: string;
+    userId: number;
+  }) => {
     try {
       if (editingPost) {
         await updatePost(editingPost.id, data);
@@ -57,10 +62,7 @@ export default function PostsPage() {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="mb-8 space-y-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 space-y-4">
         <div>
           <input
             type="text"

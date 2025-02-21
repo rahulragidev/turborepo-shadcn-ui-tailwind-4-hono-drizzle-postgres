@@ -15,4 +15,4 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SWRConfig>
   );
-} 
+}
