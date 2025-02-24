@@ -1,83 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { User } from "@workspace/database/types";
-import { api } from "@workspace/api-client";
+import { useState } from "react";
+import type { User } from "@workspace/database/types";
 import { Button } from "@workspace/ui/components/button";
 import { ClientUserSchema } from "@workspace/database/zod-schema";
 import { useZodForm } from "@workspace/ui/hooks/useZodForm";
+import { useUsers } from "@workspace/ui/hooks/use-users";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [newUserName, setNewUserName] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const { users, isLoading, error, createUser, updateUser, deleteUser } =
+    useUsers();
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useZodForm(ClientUserSchema);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  async function loadUsers() {
-    try {
-      setIsLoading(true);
-      const fetchedUsers = await api.getUsers();
-      setUsers(fetchedUsers);
-      setError(null);
-    } catch (err) {
-      setError("Failed to load users");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   const onSubmit = async (data: { name: string }) => {
     try {
-      await api.createUser(data);
-      setNewUserName("");
-      await loadUsers();
-      setError(null);
+      if (editingUser) {
+        await updateUser(editingUser.id, data);
+        setEditingUser(null);
+      } else {
+        await createUser(data);
+      }
+      reset();
     } catch (err) {
-      setError("Failed to create user");
       console.error(err);
     }
   };
 
-  async function handleUpdateUser(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editingUser) return;
-
-    try {
-      await api.updateUser(editingUser.id, { name: newUserName });
-      setNewUserName("");
-      setEditingUser(null);
-      await loadUsers();
-      setError(null);
-    } catch (err) {
-      setError("Failed to update user");
-      console.error(err);
-    }
-  }
-
-  async function handleDeleteUser(userId: number) {
+  const handleDeleteUser = async (userId: number) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
-
     try {
-      await api.deleteUser(userId);
-      await loadUsers();
-      setError(null);
+      await deleteUser(userId);
     } catch (err) {
-      setError("Failed to delete user");
       console.error(err);
     }
-  }
+  };
 
   return (
     <div className="p-8">
@@ -90,7 +53,7 @@ export default function UsersPage() {
       )}
 
       <form
-        onSubmit={editingUser ? handleUpdateUser : handleSubmit(onSubmit)}
+        onSubmit={editingUser ? handleSubmit(onSubmit) : handleSubmit(onSubmit)}
         className="mb-8 flex gap-4"
       >
         <input
@@ -112,7 +75,7 @@ export default function UsersPage() {
             variant="outline"
             onClick={() => {
               setEditingUser(null);
-              setNewUserName("");
+              reset();
             }}
           >
             Cancel
@@ -124,7 +87,7 @@ export default function UsersPage() {
         <div className="text-center">Loading users...</div>
       ) : (
         <div className="grid gap-4">
-          {users.map((user) => (
+          {users?.map((user: User) => (
             <div
               key={user.id}
               className="p-4 border rounded-md flex justify-between items-center"
@@ -141,7 +104,6 @@ export default function UsersPage() {
                   size="sm"
                   onClick={() => {
                     setEditingUser(user);
-                    setNewUserName(user.name);
                   }}
                 >
                   Edit
