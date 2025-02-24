@@ -7,13 +7,32 @@ import { ClientPostSchema } from "@workspace/database/zod-schema";
 import { useZodForm } from "@workspace/ui/hooks/useZodForm";
 import { usePosts } from "@workspace/ui/hooks/use-posts";
 import { useUsers } from "@workspace/ui/hooks/use-users";
+import { useStore, type StoreState } from "@workspace/store";
 
 export default function PostsPage() {
+  // 1. All useState hooks
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const { posts, isLoading, error, createPost, updatePost, deletePost } =
-    usePosts();
-  const { users } = useUsers();
 
+  // 2. All store hooks
+  const posts = useStore((state: StoreState) => state.posts);
+  const setPosts = useStore((state: StoreState) => state.setPosts);
+  const users = useStore((state: StoreState) => state.users);
+  const setUsers = useStore((state: StoreState) => state.setUsers);
+
+  // 3. All data fetching hooks
+  const { createPost, updatePost, deletePost, isLoading } = usePosts({
+    onSuccess: (data) => {
+      setPosts(data);
+    },
+  });
+
+  useUsers({
+    onSuccess: (data) => {
+      setUsers(data);
+    },
+  });
+
+  // 4. Form hooks
   const {
     register,
     handleSubmit,
@@ -55,12 +74,6 @@ export default function PostsPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Posts</h1>
-
-      {error && (
-        <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="mb-8 space-y-4">
         <div>
@@ -118,11 +131,13 @@ export default function PostsPage() {
         )}
       </form>
 
-      {isLoading ? (
-        <div className="text-center">Loading posts...</div>
-      ) : (
-        <div className="grid gap-4">
-          {posts?.map((post: Post) => (
+      <div className="grid gap-4">
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : posts?.length === 0 ? (
+          <div>No posts found</div>
+        ) : (
+          posts?.map((post: Post) => (
             <div key={post.id} className="p-4 border rounded-md">
               <div className="flex justify-between items-start">
                 <div>
@@ -150,9 +165,9 @@ export default function PostsPage() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }
