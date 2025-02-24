@@ -4,12 +4,21 @@ import { useState, useEffect } from "react";
 import { User } from "@workspace/database/types";
 import { api } from "@workspace/api-client";
 import { Button } from "@workspace/ui/components/button";
+import { ClientUserSchema } from "@workspace/database/zod-schema";
+import { useZodForm } from "@workspace/ui/hooks/useZodForm";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [newUserName, setNewUserName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useZodForm(ClientUserSchema);
 
   useEffect(() => {
     loadUsers();
@@ -29,15 +38,43 @@ export default function UsersPage() {
     }
   }
 
-  async function handleCreateUser(e: React.FormEvent) {
-    e.preventDefault();
+  const onSubmit = async (data: { name: string }) => {
     try {
-      await api.createUser({ name: newUserName });
+      await api.createUser(data);
       setNewUserName("");
       await loadUsers();
       setError(null);
     } catch (err) {
       setError("Failed to create user");
+      console.error(err);
+    }
+  };
+
+  async function handleUpdateUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    try {
+      await api.updateUser(editingUser.id, { name: newUserName });
+      setNewUserName("");
+      setEditingUser(null);
+      await loadUsers();
+      setError(null);
+    } catch (err) {
+      setError("Failed to update user");
+      console.error(err);
+    }
+  }
+
+  async function handleDeleteUser(userId: number) {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      await api.deleteUser(userId);
+      await loadUsers();
+      setError(null);
+    } catch (err) {
+      setError("Failed to delete user");
       console.error(err);
     }
   }
@@ -52,16 +89,35 @@ export default function UsersPage() {
         </div>
       )}
 
-      <form onSubmit={handleCreateUser} className="mb-8 flex gap-4">
+      <form
+        onSubmit={editingUser ? handleUpdateUser : handleSubmit(onSubmit)}
+        className="mb-8 flex gap-4"
+      >
         <input
           type="text"
-          value={newUserName}
-          onChange={(e) => setNewUserName(e.target.value)}
           placeholder="Enter user name"
           className="px-4 py-2 border rounded-md"
           required
+          {...register("name")}
         />
-        <Button type="submit">Add User</Button>
+        {errors.name && (
+          <span className="text-red-500">{String(errors.name.message)}</span>
+        )}
+        <Button type="submit">
+          {editingUser ? "Update User" : "Add User"}
+        </Button>
+        {editingUser && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setEditingUser(null);
+              setNewUserName("");
+            }}
+          >
+            Cancel
+          </Button>
+        )}
       </form>
 
       {isLoading ? (
@@ -78,6 +134,25 @@ export default function UsersPage() {
                 <p className="text-sm text-muted-foreground">
                   Created: {new Date(user.createdAt).toLocaleDateString()}
                 </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingUser(user);
+                    setNewUserName(user.name);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteUser(user.id)}
+                >
+                  Delete
+                </Button>
               </div>
             </div>
           ))}
